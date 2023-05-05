@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
+#include <Servo.h>
 #include "AsyncJson.h"
 #include "ArduinoJson.h"
 
@@ -17,6 +18,9 @@
 
 // Start webserver at port 80
 AsyncWebServer server(80);
+
+//Servo pwm pin : D5
+static const int servoPin = 5;
 
 // WIFI Credentials
 const char *ssid = "Wu-Tang Lan_2.4";
@@ -196,6 +200,21 @@ void rgbHandler()
     request->send(200, "application/json", response); });
 }
 
+
+void servomotor() {
+    for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
+        servo1.write(posDegrees);
+        Serial.println(posDegrees);
+        delay(20);
+    }
+
+    for(int posDegrees = 180; posDegrees >= 0; posDegrees--) {
+        servo1.write(posDegrees);
+        Serial.println(posDegrees);
+        delay(20);
+    }
+}
+
 void pizeoHandler()
 {
   server.on("/pizeo-state", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -284,6 +303,10 @@ void setup()
   pumpHandler();
   rgbHandler();
   pizeoHandler();
+  
+  //Servo motor
+  Serial.begin(115200);
+  servo1.attach(servoPin);
 
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT");
@@ -293,6 +316,10 @@ void setup()
 }
 void loop()
 {
+  
+  //Servo motor
+  servomotor();
+  
   // Sesnor state updates
   updateSensorData();
   displayUpdate();
